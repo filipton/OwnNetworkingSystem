@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityStandardAssets.Utility;
 using Random = UnityEngine.Random;
 
+#pragma warning disable
 namespace UnityStandardAssets.Characters.FirstPerson
 {
     [RequireComponent(typeof (CharacterController))]

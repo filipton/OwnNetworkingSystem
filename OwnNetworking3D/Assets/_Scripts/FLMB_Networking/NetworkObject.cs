@@ -11,8 +11,8 @@ using TMPro;
 
 public class NetworkObject : MonoBehaviour
 {
-    [Range(1f, 100)]
-    public float WaitTime = 1;
+    [Range(1, 30)]
+    public float NetworkSendRate = 1;
 
     public string uniqueId;
     public string nick;
@@ -64,7 +64,7 @@ public class NetworkObject : MonoBehaviour
     {
         yield return new WaitForEndOfFrame();
         yes:
-        yield return new WaitForSeconds(WaitTime / 1000);
+        yield return new WaitForSeconds(NetworkSendRate / 1000);
         if (this.transform.position.x.ToString() != pos.x || this.transform.position.y.ToString() != pos.y || this.transform.position.z.ToString() != pos.z || this.transform.rotation.x.ToString() != pos.rx || this.transform.rotation.y.ToString() != pos.ry || this.transform.rotation.z.ToString() != pos.rz || this.transform.rotation.w.ToString() != pos.rw)
         {
             pos.x = this.transform.position.x.ToString();

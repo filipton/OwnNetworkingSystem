@@ -19,7 +19,7 @@ namespace UnityStandardAssets.Utility
         }
 
         public Mode action = Mode.Activate;         // The action to accomplish
-        public Object target;                       // The game object to affect. If none, the trigger work on this game object
+        public object target;                       // The game object to affect. If none, the trigger work on this game object
         public GameObject source;
         public int triggerCount = 1;
         public bool repeatTrigger = false;
@@ -31,7 +31,7 @@ namespace UnityStandardAssets.Utility
 
             if (triggerCount == 0 || repeatTrigger)
             {
-                Object currentTarget = target ?? gameObject;
+                object currentTarget = target ?? gameObject;
                 Behaviour targetBehaviour = currentTarget as Behaviour;
                 GameObject targetGameObject = currentTarget as GameObject;
                 if (targetBehaviour != null)
@@ -54,7 +54,7 @@ namespace UnityStandardAssets.Utility
                             {
                                 Instantiate(source, targetGameObject.transform.position,
                                             targetGameObject.transform.rotation);
-                                DestroyObject(targetGameObject);
+                                Destroy(targetGameObject);
                             }
                         }
                         break;

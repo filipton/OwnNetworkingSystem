@@ -84,7 +84,7 @@ namespace UdpServer_test
             Console.WriteLine("-------------------------------------------------------------");
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("FLMB - UDP-TEST-GAME-SERVER");
-            Console.WriteLine($"BUILD TIME: {lastmodified}");
+            Console.WriteLine($"BUILD DATE AND TIME: {lastmodified.Day}.{lastmodified.Month}.{lastmodified.Year} {lastmodified.Hour}:{lastmodified.Minute}");
             Console.WriteLine($"SERVER STARTED! IP: {ip}:{port}");
             Console.ResetColor();
             Console.WriteLine("-------------------------------------------------------------");
@@ -128,6 +128,8 @@ namespace UdpServer_test
                                 BrodecastWName("SOMEONE CONNECTED!", connections[playerindex].Name);
                                 BrodecastByName("AUTH COMPLETE!", connections[playerindex].Name);
 
+                                BrodecastAll($"[AddClient] {connections[playerindex].Name}");
+
                                 SyncVars ss = svlist.Find(x => x.name == "PlayersCount");
                                 if (ss == null)
                                 {
@@ -157,7 +159,7 @@ namespace UdpServer_test
                                 {
                                     foreach(SyncVars sv in svlist)
                                     {
-                                        Console.WriteLine($"{sv.name}:{sv.var}");
+                                        //Console.WriteLine($"{sv.name}:{sv.var}");
                                         BrodecastSomeOne($"[SyncVarrible] {sv.name}:{sv.var}", connections[playerindex].ip);
                                     }
                                 }
@@ -187,7 +189,7 @@ namespace UdpServer_test
                             {
                                 connections.Remove(clienttodis);
                                 Console.ForegroundColor = ConsoleColor.Red;
-                                Console.WriteLine($"Client Disconnected! [-] IP: {received.Sender.ToString()}. Clients connected: {connections.Count}");
+                                Console.WriteLine($"Client Disconnected! [-] IP: {received.Sender.ToString()}, NICK: {clienttodis.Name}. Clients connected: {connections.Count}");
                                 Console.Title = $"FLMB_SERVER (TEST-UDP) STARTED! [{connections.Count}/20]";
                                 Console.ResetColor();
 
@@ -201,6 +203,9 @@ namespace UdpServer_test
 
                                 //sync players var
                                 BrodecastAll($"[SyncVarrible] PlayersCount:{connections.Count}");
+
+                                //remove client
+                                BrodecastAll($"[RemoveClient] {clienttodis.Name}");
                             }
                         }
                         else if (command.Contains("[InitalizeObject] "))
@@ -238,6 +243,7 @@ namespace UdpServer_test
                         {
                             ActualScene = arguments[0];
                             BrodecastAll(command);
+                            Console.WriteLine(command);
                             BrodecastAll($"[SyncVarrible] PlayersCount:{connections.Count}");
                         }
                         else if (command.Contains("[SyncVarrible] "))

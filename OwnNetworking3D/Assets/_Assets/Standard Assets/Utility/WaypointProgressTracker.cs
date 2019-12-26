@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 
+#pragma warning disable
 namespace UnityStandardAssets.Utility
 {
     public class WaypointProgressTracker : MonoBehaviour

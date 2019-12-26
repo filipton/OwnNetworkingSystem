@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEditor;
 #endif
 
+#pragma warning disable
 namespace UnityStandardAssets.Utility
 {
 #if UNITY_EDITOR

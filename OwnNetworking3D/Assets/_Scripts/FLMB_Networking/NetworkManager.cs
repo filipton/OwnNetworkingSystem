@@ -140,9 +140,9 @@ public class NetworkManager : MonoBehaviour
                         List<Rpcs> r;
 
                         //commands
-                        if (command.Contains("[InitalizeClientObject] "))
+                        if (command.Contains("[SomeCommand With Special Args] "))
                         {
-                            r = rpclist.FindAll(o => o.cmd == "InitalizeClientObject");
+                            r = rpclist.FindAll(o => o.cmd == "FHUDSAGGFQEGUYXDGCgt763tdwcg7463gc7uiGFEUY^FG");
                             try
                             {
                                 foreach (Rpcs rpc in r)
@@ -152,45 +152,9 @@ public class NetworkManager : MonoBehaviour
                             }
                             catch { }
                         }
-                        else if (command.Contains("[ObjectMovement] "))
+                        else
                         {
-                            r = rpclist.FindAll(o => o.cmd == "ObjectMovement");
-                            try
-                            {
-                                foreach (Rpcs rpc in r)
-                                {
-                                    rpc.MI.Invoke(rpc.classInstance, arguments);
-                                }
-                            }
-                            catch { }
-                        }
-                        else if(command.Contains("[ChangeScene] "))
-                        {
-                            r = rpclist.FindAll(o => o.cmd == "ChangeScene");
-                            try
-                            {
-                                foreach (Rpcs rpc in r)
-                                {
-                                    rpc.MI.Invoke(rpc.classInstance, arguments);
-                                }
-                            }
-                            catch { }
-                        }
-                        else if(command.Contains("[RemoveObject] "))
-                        {
-                            r = rpclist.FindAll(o => o.cmd == "RemoveObject");
-                            try
-                            {
-                                foreach (Rpcs rpc in r)
-                                {
-                                    rpc.MI.Invoke(rpc.classInstance, arguments);
-                                }
-                            }
-                            catch { }
-                        }
-                        else if(command.Contains("[SyncVarrible] "))
-                        {
-                            r = rpclist.FindAll(o => o.cmd == "SyncVarrible");
+                            r = rpclist.FindAll(o => o.cmd == command.Split(' ')[0].Replace("[", "").Replace("]", "").Replace(" ", ""));
                             try
                             {
                                 foreach (Rpcs rpc in r)
@@ -253,7 +217,7 @@ public class NetworkManager : MonoBehaviour
         //objtoinit.transform.SetPositionAndRotation(new Vector3 { x = float.Parse(x), y = float.Parse(y), z = float.Parse(z) }, new Quaternion { x = float.Parse(rx), y = float.Parse(ry), z = float.Parse(rz), w = float.Parse(rw) });
         objtoinit.GetComponent<NetworkObject>().uniqueId = uid;
         objects.Add(new Object { uid = uid, gb = objtoinit });
-        //print($"{nick} == {Server.Nick.text}");
+        print($"{nick} == {Server.Nick.text}");
         if (nick == Server.Nick.text)
         {
             objtoinit.GetComponent<NetworkObject>().CanMove = true;
