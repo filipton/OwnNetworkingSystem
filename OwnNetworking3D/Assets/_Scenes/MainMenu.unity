@@ -2149,7 +2149,7 @@ GameObject:
   m_Layer: 0
   m_Name: NetworkManager
   m_TagString: Untagged
-  m_Icon: {fileID: 0}
+  m_Icon: {fileID: 2800000, guid: 9c7866b3c976ab24191739a50c783360, type: 3}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
@@ -2175,6 +2175,7 @@ MonoBehaviour:
   rpclist: []
   svlist: []
   objects: []
+  SVQueue: []
 --- !u!4 &1419417813
 Transform:
   m_ObjectHideFlags: 0

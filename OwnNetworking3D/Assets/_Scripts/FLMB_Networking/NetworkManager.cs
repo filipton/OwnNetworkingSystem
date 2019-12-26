@@ -226,6 +226,19 @@ public class NetworkManager : MonoBehaviour
         }
         catch { }
     }
+    public void SendCommand(InputField ifcom)
+    {
+        try
+        {
+            clientudp.Send(ifcom.text);
+        }
+        catch { }
+    }
+
+    public void SyncVar(string name, string varrible)
+    {
+        SendCommand($"[SyncVarrible] {name}:{varrible}");
+    }
 
     [Rpc]
     public void ChangeScene(string name)
