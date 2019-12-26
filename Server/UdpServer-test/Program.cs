@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -75,12 +76,16 @@ namespace UdpServer_test
 
         static void Main(string[] args)
         {
+            FileInfo fileInfo = new FileInfo(Assembly.GetEntryAssembly().Location);
+            var lastmodified = fileInfo.LastWriteTime;
+            string ip = GetPublicIpAddress();
+
             Console.Title = $"FLMB_SERVER (TEST-UDP) STARTED! [0/20]";
             Console.WriteLine("-------------------------------------------------------------");
             Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine("FLMB - UDP-TEST-GAME-SERVER 2019.12.23");
-            Console.WriteLine("BUILD TIME: 22:55");
-            Console.WriteLine($"SERVER STARTED! IP: {GetPublicIpAddress()}:{port}");
+            Console.WriteLine("FLMB - UDP-TEST-GAME-SERVER");
+            Console.WriteLine($"BUILD TIME: {lastmodified}");
+            Console.WriteLine($"SERVER STARTED! IP: {ip}:{port}");
             Console.ResetColor();
             Console.WriteLine("-------------------------------------------------------------");
             Console.WriteLine();
