@@ -37,6 +37,8 @@ public class NetworkManager : MonoBehaviour
     public List<Object> objects = new List<Object>();
 
     public List<SyncVarQueue> SVQueue = new List<SyncVarQueue>();
+    
+    string MyNick;
 
     private void Awake()
     {
@@ -126,6 +128,7 @@ public class NetworkManager : MonoBehaviour
 
     public void Connect()
     {
+        MyNick = Server.Nick.text;
         try
         {
             clientudp = UdpUser.ConnectTo(Server.Ip.text, int.Parse(Server.Port.text));
@@ -140,39 +143,29 @@ public class NetworkManager : MonoBehaviour
                         List<Rpcs> r;
 
                         //commands
-                        if (command.Contains("[SomeCommand With Special Args] "))
+                        r = rpclist.FindAll(o => o.cmd == command.Split(' ')[0].Replace("[", "").Replace("]", "").Replace(" ", ""));
+                        try
                         {
-                            r = rpclist.FindAll(o => o.cmd == "FHUDSAGGFQEGUYXDGCgt763tdwcg7463gc7uiGFEUY^FG");
-                            try
+                            foreach (Rpcs rpc in r)
                             {
-                                foreach (Rpcs rpc in r)
+                                if(rpc.MI.GetParameters().Length > 0)
                                 {
                                     rpc.MI.Invoke(rpc.classInstance, arguments);
                                 }
-                            }
-                            catch { }
-                        }
-                        else
-                        {
-                            r = rpclist.FindAll(o => o.cmd == command.Split(' ')[0].Replace("[", "").Replace("]", "").Replace(" ", ""));
-                            try
-                            {
-                                foreach (Rpcs rpc in r)
+                                else
                                 {
-                                    rpc.MI.Invoke(rpc.classInstance, arguments);
+                                    rpc.MI.Invoke(rpc.classInstance, null);
                                 }
                             }
-                            catch { }
                         }
+                        catch { }
+
                     }
-                    catch (Exception ex)
-                    {
-                        print(ex);
-                    }
+                    catch { }
                 }
             });
             Thread.Sleep(100);
-            SendCommand($"[InitalizeConnection] {Server.Nick.text}");
+            SendCommand($"[InitalizeConnection] {MyNick}");
         }
         catch {  }
     }
@@ -217,8 +210,8 @@ public class NetworkManager : MonoBehaviour
         //objtoinit.transform.SetPositionAndRotation(new Vector3 { x = float.Parse(x), y = float.Parse(y), z = float.Parse(z) }, new Quaternion { x = float.Parse(rx), y = float.Parse(ry), z = float.Parse(rz), w = float.Parse(rw) });
         objtoinit.GetComponent<NetworkObject>().uniqueId = uid;
         objects.Add(new Object { uid = uid, gb = objtoinit });
-        print($"{nick} == {Server.Nick.text}");
-        if (nick == Server.Nick.text)
+        print($"{nick} == {MyNick}");
+        if (nick == MyNick)
         {
             objtoinit.GetComponent<NetworkObject>().CanMove = true;
         }
@@ -257,6 +250,12 @@ public class NetworkManager : MonoBehaviour
             SVQueue.Add(new SyncVarQueue { name = varname, value = changeto });
         }
         //print($"VAR: {varname}, CHANGETO: {changeto}, NORMAL: {PlayersCount}, CHECK: {sv.classInstance.GetType().GetField(varname).GetValue(sv.classInstance)}");
+    }
+
+    [Rpc]
+    public void CheckIfOnline()
+    {
+        SendCommand("[IsOnline]");
     }
 
     private void OnApplicationQuit()

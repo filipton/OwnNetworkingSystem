@@ -70,6 +70,7 @@ namespace UdpServer_test
 
         public static List<Object> Objs = new List<Object>();
         public static List<SyncVars> svlist = new List<SyncVars>();
+        public static List<OnlineChecher> Ocs = new List<OnlineChecher>();
         public static string ActualScene = "GameLobby";
 
         public static int uids = 0;
@@ -90,14 +91,43 @@ namespace UdpServer_test
             Console.WriteLine("-------------------------------------------------------------");
             Console.WriteLine();
 
-            /*Task.Factory.StartNew(async () =>
+            Task.Factory.StartNew(() =>
             {
-                while(true)
+                while (true)
                 {
-                    Thread.Sleep(30000);
-                    Console.WriteLine("CHECK CLIENTS");
+                    Thread.Sleep(60000);
+                    foreach(Connections con in connections)
+                    {
+                        Ocs.Add(new OnlineChecher { Name = con.Name, Online = false });
+                    }
+                    BrodecastAll("[CheckIfOnline]");
+                    Thread.Sleep(5000);
+                    foreach(OnlineChecher oc in Ocs)
+                    {
+                        if(oc.Online == false)
+                        {
+                            //kick player
+
+                            //send message to client who is kicking (in future)
+                            //FUTURE!
+
+                            //delete player from connection list
+                            Connections c = connections.Find(x => x.Name == oc.Name);
+                            connections.Remove(c);
+
+                            //send messages to other clients (client disconected)
+                            Console.ForegroundColor = ConsoleColor.Red;
+                            Console.WriteLine($"Client Timed Out! [-] IP: {c.ip.ToString()}, NICK: {c.Name}. Clients connected: {connections.Count}");
+                            Console.ResetColor();
+                            BrodecastAll($"[SyncVarrible] PlayersCount:{connections.Count}");
+                            BrodecastAll($"[RemoveClient] {c.Name}");
+                            //BrodecastAll($"PLAYER TIMED OUT: {oc.Name}");
+                        }
+                    }
+                    Thread.Sleep(1000);
+                    Ocs.Clear();
                 }
-            });*/
+            });
 
             //start listening for messages
             Task.Factory.StartNew(async () => {
@@ -251,6 +281,11 @@ namespace UdpServer_test
                             svlist.Add(new SyncVars { name = arguments[0], var = arguments[1] });
                             BrodecastAll($"[SyncVarrible] {arguments[0]}:{arguments[1]}");
                         }
+                        else if(command == "[IsOnline]")
+                        {
+                            OnlineChecher online = Ocs.Find(x => x.Name == connections[playerindex].Name);
+                            online.Online = true;
+                        }
 
                         //BrodecastAllWOne(received.Message, received.Sender);
                     }
@@ -354,5 +389,11 @@ namespace UdpServer_test
     {
         public string name;
         public string var;
+    }
+
+    public class OnlineChecher
+    {
+        public string Name;
+        public bool Online;
     }
 }

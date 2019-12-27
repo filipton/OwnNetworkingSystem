@@ -48,6 +48,12 @@ public class NetworkObject : MonoBehaviour
         }
     }
 
+    void Update()
+    {
+        if(NM == null)
+            NM = FindObjectOfType<NetworkManager>();
+    }
+
     public void MoveRefresh()
     {
         StopCoroutine(SyncMovement());
