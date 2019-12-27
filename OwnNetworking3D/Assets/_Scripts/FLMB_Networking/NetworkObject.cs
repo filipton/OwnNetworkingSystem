@@ -63,7 +63,17 @@ public class NetworkObject : MonoBehaviour
 
     public void ShowGlasses()
     {
-        Glasses.layer = 0;
+        SetLayer(Glasses, 0);
+    }
+
+    public void SetLayer(GameObject gb, int layer)
+    {
+        gb.layer = layer;
+
+        foreach(Transform t in gb.transform)
+        {
+            SetLayer(t.gameObject, layer);
+        }
     }
 
     public IEnumerator SyncMovement()
