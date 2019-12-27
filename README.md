@@ -5,5 +5,5 @@
 - [X] Sync Vars
 - [X] Sync Position
 - [X] Change Scene
-- [ ] Lobby Scene with Player Counter
+- [X] Lobby Scene with Player Counter
 - [ ] Make FPS Sample
