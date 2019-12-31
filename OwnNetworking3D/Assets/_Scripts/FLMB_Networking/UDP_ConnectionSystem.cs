@@ -21,13 +21,14 @@ abstract class UdpBase
         Client = new UdpClient();
     }
 
-    public async Task<Received> Receive()
+    public Received Receive()
     {
-        var result = await Client.ReceiveAsync();
+        var remoteEndPoint = new IPEndPoint(IPAddress.Any, 0);
+        var result = Client.Receive(ref remoteEndPoint);
         return new Received()
         {
-            Message = Encoding.ASCII.GetString(result.Buffer, 0, result.Buffer.Length),
-            Sender = result.RemoteEndPoint
+            Message = Encoding.ASCII.GetString(result),
+            Sender = remoteEndPoint
         };
     }
 }

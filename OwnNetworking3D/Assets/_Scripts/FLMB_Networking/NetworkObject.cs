@@ -8,6 +8,7 @@ using System.Text;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
 using TMPro;
+using System.IO;
 
 public class NetworkObject : MonoBehaviour
 {
@@ -21,30 +22,39 @@ public class NetworkObject : MonoBehaviour
     public Pos pos;
     public bool CanMove = false;
 
-    public GameObject Glasses;
-
+    public GameObject Body;
 
     public void Awake()
     {
         //uniqueId = Random.Range(0, 1000000).ToString();
         NM = FindObjectOfType<NetworkManager>();
-        if (CanMove)
-            StartCoroutine(SyncMovement());
     }
 
     [Rpc]
-    public void ObjectMovement(string uId, string x, string y, string z, string rx, string ry, string rz, string rw)
+    public void ObjectMovement(string x, string y, string z, string rx, string ry, string rz, string rw)
     {
-        if (uId == uniqueId)
+        try
         {
-            this.transform.SetPositionAndRotation(new Vector3 { x = float.Parse(x), y = float.Parse(y), z = float.Parse(z) }, new Quaternion { x = float.Parse(rx), y = float.Parse(ry), z = float.Parse(rz), w = float.Parse(rw) });
-            pos.x = x;
-            pos.y = y;
-            pos.z = z;
-            pos.rx = rx;
-            pos.ry = ry;
-            pos.rz = rz;
-            pos.rw = rw;
+            float ox, oy, oz, orx, ory, orz, orw;
+            if (float.TryParse(x, out ox) && float.TryParse(y, out oy) && float.TryParse(z, out oz) && float.TryParse(rx, out orx) && float.TryParse(ry, out ory) && float.TryParse(rz, out orz) && float.TryParse(rw, out orw))
+            {
+                //this.transform.SetPositionAndRotation(new Vector3 { x = float.Parse(x), y = float.Parse(y), z = float.Parse(z) }, new Quaternion { x = float.Parse(rx), y = float.Parse(ry), z = float.Parse(rz), w = float.Parse(rw) });
+                Vector3 vector = new Vector3 { x = ox, y = oy, z = oz };
+                Quaternion rotation = new Quaternion { x = orx, y = ory, z = orz, w = orw };
+                this.transform.position = vector;
+                this.transform.rotation = rotation;
+                pos.x = ox;
+                pos.y = oy;
+                pos.z = oz;
+                pos.rx = orx;
+                pos.ry = ory;
+                pos.rz = orz;
+                pos.rw = orw;
+            }
+        }
+        catch(Exception e)
+        {
+            print(e);
         }
     }
 
@@ -63,7 +73,7 @@ public class NetworkObject : MonoBehaviour
 
     public void ShowGlasses()
     {
-        SetLayer(Glasses, 0);
+        SetLayer(Body, 0);
     }
 
     public void SetLayer(GameObject gb, int layer)
@@ -81,15 +91,15 @@ public class NetworkObject : MonoBehaviour
         yield return new WaitForEndOfFrame();
         yes:
         yield return new WaitForSeconds(NetworkSendRate / 1000);
-        if (this.transform.position.x.ToString() != pos.x || this.transform.position.y.ToString() != pos.y || this.transform.position.z.ToString() != pos.z || this.transform.rotation.x.ToString() != pos.rx || this.transform.rotation.y.ToString() != pos.ry || this.transform.rotation.z.ToString() != pos.rz || this.transform.rotation.w.ToString() != pos.rw)
+        if (this.transform.position.x != pos.x || this.transform.position.y != pos.y || this.transform.position.z != pos.z || this.transform.rotation.x != pos.rx || this.transform.rotation.y != pos.ry || this.transform.rotation.z != pos.rz || this.transform.rotation.w != pos.rw)
         {
-            pos.x = this.transform.position.x.ToString();
-            pos.y = this.transform.position.y.ToString();
-            pos.z = this.transform.position.z.ToString();
-            pos.rx = this.transform.rotation.x.ToString();
-            pos.ry = this.transform.rotation.y.ToString();
-            pos.rz = this.transform.rotation.z.ToString();
-            pos.rw = this.transform.rotation.w.ToString();
+            pos.x = this.transform.position.x;
+            pos.y = this.transform.position.y;
+            pos.z = this.transform.position.z;
+            pos.rx = this.transform.rotation.x;
+            pos.ry = this.transform.rotation.y;
+            pos.rz = this.transform.rotation.z;
+            pos.rw = this.transform.rotation.w;
             NM.SendCommand($"[ObjectMovement] {uniqueId}:{this.transform.position.x}:{this.transform.position.y}:{this.transform.position.z}:{this.transform.rotation.x.ToString()}:{this.transform.rotation.y.ToString()}:{this.transform.rotation.z.ToString()}:{this.transform.rotation.w.ToString()}");
         }
         goto yes;
@@ -99,11 +109,11 @@ public class NetworkObject : MonoBehaviour
 [Serializable]
 public class Pos
 {
-    public string x;
-    public string y;
-    public string z;
-    public string rx;
-    public string ry;
-    public string rz;
-    public string rw;
+    public float x;
+    public float y;
+    public float z;
+    public float rx;
+    public float ry;
+    public float rz;
+    public float rw;
 }

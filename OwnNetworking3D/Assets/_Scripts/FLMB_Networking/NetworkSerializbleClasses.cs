@@ -22,6 +22,14 @@ public class Rpcs
 }
 
 [Serializable]
+public class Movements
+{
+    public string uid;
+    public object classInstance;
+    public MethodInfo MI;
+}
+
+[Serializable]
 public class SyncVars
 {
     public string name;

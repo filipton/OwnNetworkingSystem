@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using TMPro;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -35,10 +36,11 @@ public class NetworkManager : MonoBehaviour
     public List<Rpcs> rpclist = new List<Rpcs>();
     public List<SyncVars> svlist = new List<SyncVars>();
     public List<Object> objects = new List<Object>();
+    public List<Movements> movements = new List<Movements>();
 
     public List<SyncVarQueue> SVQueue = new List<SyncVarQueue>();
     
-    string MyNick;
+    public string MyNick;
 
     private void Awake()
     {
@@ -84,8 +86,6 @@ public class NetworkManager : MonoBehaviour
 
     public void GetRpcs()
     {
-        rpclist.Clear();
-
         MonoBehaviour[] sceneActive = GameObject.FindObjectsOfType<MonoBehaviour>();
 
         foreach (MonoBehaviour mono in sceneActive)
@@ -98,7 +98,19 @@ public class NetworkManager : MonoBehaviour
                 RpcAttribute attribute = Attribute.GetCustomAttribute(objectFields[i], typeof(RpcAttribute)) as RpcAttribute;
                 if (attribute != null)
                 {
-                    rpclist.Add(new Rpcs { cmd = objectFields[i].Name, classInstance = mono.GetComponent(mono.GetType()), MI = objectFields[i] });
+                    if (objectFields[i].Name == "ObjectMovement")
+                    {
+                        string uid = mono.GetComponent(mono.GetType()).GetType().GetField("uniqueId").GetValue(mono.GetComponent(mono.GetType())).ToString();
+                        movements.Add(new Movements { uid = uid, classInstance = mono.GetComponent(mono.GetType()), MI = objectFields[i] });
+                    }
+                    else
+                    {
+                        Rpcs rtofind = rpclist.Find(x => x.classInstance == (object)mono.GetComponent(mono.GetType()) && x.MI == objectFields[i]);
+                        if(rtofind == null)
+                        {
+                            rpclist.Add(new Rpcs { cmd = objectFields[i].Name, classInstance = mono.GetComponent(mono.GetType()), MI = objectFields[i] });
+                        }
+                    }
                 }
             }
         }
@@ -132,33 +144,45 @@ public class NetworkManager : MonoBehaviour
         try
         {
             clientudp = UdpUser.ConnectTo(Server.Ip.text, int.Parse(Server.Port.text));
-            Task.Factory.StartNew(async () => {
+            Task.Factory.StartNew(() => {
                 while (true)
                 {
                     try
                     {
-                        var received = await clientudp.Receive();
+                        var received = clientudp.Receive();
                         string command = received.Message;
-                        string[] arguments = command.Replace($"{command.Split(' ')[0]} ", "").Split(':');
-                        List<Rpcs> r;
-
-                        //commands
-                        r = rpclist.FindAll(o => o.cmd == command.Split(' ')[0].Replace("[", "").Replace("]", "").Replace(" ", ""));
-                        try
+                        string cmd = command.Split(' ')[0].Replace("[", "").Replace("]", "").Replace(" ", "");
+                        List<string> arguments = command.Replace($"{command.Split(' ')[0]} ", "").Split(':').ToList();
+                        if(cmd == "ObjectMovement")
                         {
-                            foreach (Rpcs rpc in r)
+                            Movements move;
+
+                            move = movements.Find(x => x.uid == arguments[0]);
+                            arguments.RemoveAt(0);
+                            move.MI.Invoke(move.classInstance, arguments.ToArray());
+                        }
+                        else
+                        {
+                            List<Rpcs> r;
+
+                            //commands
+                            r = rpclist.FindAll(o => o.cmd == cmd);
+                            try
                             {
-                                if(rpc.MI.GetParameters().Length > 0)
+                                foreach (Rpcs rpc in r)
                                 {
-                                    rpc.MI.Invoke(rpc.classInstance, arguments);
-                                }
-                                else
-                                {
-                                    rpc.MI.Invoke(rpc.classInstance, null);
+                                    if (rpc.MI.GetParameters().Length > 0)
+                                    {
+                                        rpc.MI.Invoke(rpc.classInstance, arguments.ToArray());
+                                    }
+                                    else
+                                    {
+                                        rpc.MI.Invoke(rpc.classInstance, null);
+                                    }
                                 }
                             }
+                            catch { }
                         }
-                        catch { }
 
                     }
                     catch { }
@@ -208,23 +232,24 @@ public class NetworkManager : MonoBehaviour
     {
         GameObject objtoinit = Instantiate(Prefabs.Find(g => g.name == prefabname).Object, new Vector3 { x = float.Parse(x), y = float.Parse(y), z = float.Parse(z) }, new Quaternion { x = float.Parse(rx), y = float.Parse(ry), z = float.Parse(rz), w = float.Parse(rw) }); ;
         //objtoinit.transform.SetPositionAndRotation(new Vector3 { x = float.Parse(x), y = float.Parse(y), z = float.Parse(z) }, new Quaternion { x = float.Parse(rx), y = float.Parse(ry), z = float.Parse(rz), w = float.Parse(rw) });
-        objtoinit.GetComponent<NetworkObject>().uniqueId = uid;
+        NetworkObject networkObject = objtoinit.GetComponent<NetworkObject>();
+        networkObject.uniqueId = uid;
         objects.Add(new Object { uid = uid, gb = objtoinit });
         print($"{nick} == {MyNick}");
         if (nick == MyNick)
         {
-            objtoinit.GetComponent<NetworkObject>().CanMove = true;
+            networkObject.CanMove = true;
         }
         else
         {
             Destroy(objtoinit.GetComponent<FirstPersonController>());
             Destroy(objtoinit.GetComponent<AudioSource>());
             Destroy(objtoinit.GetComponentInChildren<Camera>().gameObject);
-            objtoinit.GetComponent<NetworkObject>().ShowGlasses();
+            networkObject.ShowGlasses();
             print($"NICK NOWEGO GRACZA TO: {nick}");
-            objtoinit.GetComponent<NetworkObject>().nick = nick;
+            networkObject.nick = nick;
         }
-        objtoinit.GetComponent<NetworkObject>().MoveRefresh();
+        networkObject.MoveRefresh();
         GetRpcs();
     }
 
