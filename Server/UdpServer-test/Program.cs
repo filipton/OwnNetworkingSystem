@@ -91,43 +91,52 @@ namespace UdpServer_test
             Console.WriteLine("-------------------------------------------------------------");
             Console.WriteLine();
 
-            Task.Factory.StartNew(() =>
+            /*Task.Factory.StartNew(() =>
             {
                 while (true)
                 {
-                    Thread.Sleep(60000);
-                    foreach(Connections con in connections)
+                    try
                     {
-                        Ocs.Add(new OnlineChecher { Name = con.Name, Online = false });
-                    }
-                    BrodecastAll("[CheckIfOnline]");
-                    Thread.Sleep(5000);
-                    foreach(OnlineChecher oc in Ocs)
-                    {
-                        if(oc.Online == false)
+                        Thread.Sleep(50000);
+                        foreach (Connections con in connections)
                         {
-                            //kick player
-
-                            //send message to client who is kicking (in future)
-                            //FUTURE!
-
-                            //delete player from connection list
-                            Connections c = connections.Find(x => x.Name == oc.Name);
-                            connections.Remove(c);
-
-                            //send messages to other clients (client disconected)
-                            Console.ForegroundColor = ConsoleColor.Red;
-                            Console.WriteLine($"Client Timed Out! [-] IP: {c.ip.ToString()}, NICK: {c.Name}. Clients connected: {connections.Count}");
-                            Console.ResetColor();
-                            BrodecastAll($"[SyncVarrible] PlayersCount:{connections.Count}");
-                            BrodecastAll($"[RemoveClient] {c.Name}");
-                            //BrodecastAll($"PLAYER TIMED OUT: {oc.Name}");
+                            Ocs.Add(new OnlineChecher { Name = con.Name, Online = false });
                         }
+                        BrodecastAll("[CheckIfOnline]");
+                        Thread.Sleep(5000);
+                        for (int x = 0; x < Ocs.Count; x++)
+                        {
+                            if (Ocs[x].Online == false)
+                            {
+                                //kick player
+
+                                //send message to client who is kicking (in future)
+                                //FUTURE!
+
+                                //delete player from connection list
+                                Connections c = connections.Find(y => y.Name.Equals(Ocs[x].Name));
+                                connections.Remove(c);
+
+                                //send messages to other clients (client disconected)
+                                Console.ForegroundColor = ConsoleColor.Red;
+                                Console.WriteLine($"Client Timed Out! [-] IP: {c.ip.ToString()}, NICK: {c.Name}. Clients connected: {connections.Count}");
+                                Console.ResetColor();
+                                BrodecastAll($"[SyncVarrible] PlayersCount:{connections.Count}");
+                                BrodecastAll($"[RemoveClient] {c.Name}");
+                                //BrodecastAll($"PLAYER TIMED OUT: {oc.Name}");
+                            }
+                            else
+                            {
+                                Console.WriteLine("XD");
+                            }
+                            Thread.Sleep(500);
+                        }
+                        Thread.Sleep(1000);
+                        Ocs.Clear();
                     }
-                    Thread.Sleep(1000);
-                    Ocs.Clear();
+                    catch { }
                 }
-            });
+            });*/
 
             //start listening for messages
             Task.Factory.StartNew(async () => {
@@ -283,8 +292,9 @@ namespace UdpServer_test
                         }
                         else if(command == "[IsOnline]")
                         {
-                            OnlineChecher online = Ocs.Find(x => x.Name == connections[playerindex].Name);
+                            OnlineChecher online = Ocs.Find(x => x.Name.Equals(connections[playerindex].Name));
                             online.Online = true;
+                            Console.WriteLine(online.Name + " : " + online.Online);
                         }
 
                         //BrodecastAllWOne(received.Message, received.Sender);

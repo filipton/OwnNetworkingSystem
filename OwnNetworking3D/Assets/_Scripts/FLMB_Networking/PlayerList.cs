@@ -27,10 +27,11 @@ public class PlayerList : MonoBehaviour
         {
             PlayerListParent = GameObject.Find("PlayerParent");
         }
-        if(arg0.name == "SampleScene" || arg1.name == "SampleScene")
+        if(arg1.name == "SampleScene")
         {
             for(int i = 0; i < Players.Count; i++)
             {
+                print(Players[i].NickName);
                 StartCoroutine(AddClients(Players[i]));
             }
         }
