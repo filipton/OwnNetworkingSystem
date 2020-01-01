@@ -194,6 +194,16 @@ namespace UdpServer_test
                                         BrodecastSomeOne($"[InitalizeClientObject] {obj.UniqueID}:{obj.x}:{obj.y}:{obj.z}:{obj.rx}:{obj.ry}:{obj.rz}:{obj.rw}:{obj.type}:{obj.OwnerNick}", connections[playerindex].ip);
                                     }
                                 }
+                                if(connections.Count > 0)
+                                {
+                                    foreach(Connections con in connections)
+                                    {
+                                        if(con.ip.ToString() != connections[playerindex].ip.ToString())
+                                        {
+                                            BrodecastSomeOne($"[AddClient] {con.Name}", connections[playerindex].ip);
+                                        }
+                                    }
+                                }
                                 if (svlist.Count > 0)
                                 {
                                     foreach(SyncVars sv in svlist)
