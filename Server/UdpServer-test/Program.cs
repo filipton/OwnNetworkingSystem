@@ -71,6 +71,10 @@ namespace UdpServer_test
         public static List<Object> Objs = new List<Object>();
         public static List<SyncVars> svlist = new List<SyncVars>();
         public static List<OnlineChecher> Ocs = new List<OnlineChecher>();
+        public static List<Velocity> VelocityCounter = new List<Velocity>();
+
+        public static double maxspeed = 47850;
+
         public static string ActualScene = "GameLobby";
 
         public static int uids = 0;
@@ -286,6 +290,43 @@ namespace UdpServer_test
                                     Obj.rw = arguments[7];
                                     BrodecastAllWOne($"[ObjectMovement] {arguments[0]}:{arguments[1]}:{arguments[2]}:{arguments[3]}:{arguments[4]}:{arguments[5]}:{arguments[6]}:{arguments[7]}", received.Sender);
                                 }
+
+                                //check velocity
+                                int vindex = VelocityCounter.FindIndex(x => x.uid == arguments[0]);
+                                if (vindex >= 0)
+                                {
+                                    if((DateTime.Now - VelocityCounter[vindex].time1).TotalSeconds >= 1)
+                                    {
+                                        if (VelocityCounter[vindex].x2 == 0 && VelocityCounter[vindex].z2 == 0)
+                                        {
+                                            VelocityCounter[vindex].x2 = float.Parse(arguments[1]);
+                                            VelocityCounter[vindex].y2 = float.Parse(arguments[2]);
+                                            VelocityCounter[vindex].z2 = float.Parse(arguments[3]);
+                                            VelocityCounter[vindex].time2 = DateTime.Now;
+
+                                            //count distance (2)
+                                            float distk = ((VelocityCounter[vindex].x1 - VelocityCounter[vindex].x2) * (VelocityCounter[vindex].x1 - VelocityCounter[vindex].x2) + (VelocityCounter[vindex].z1 - VelocityCounter[vindex].z2) * (VelocityCounter[vindex].z1 - VelocityCounter[vindex].z2));
+                                            double distance = Math.Sqrt(Convert.ToDouble(distk));
+
+                                            //time
+                                            TimeSpan timereming = (VelocityCounter[vindex].time2 - VelocityCounter[vindex].time1);
+
+                                            //calc velocity
+                                            double velocity = distance / timereming.TotalHours;
+
+                                            //if velocity is better than max speed palyer is back
+                                            if (velocity > maxspeed)
+                                            {
+                                                BrodecastAll($"[ObjectMovement] {arguments[0]}:{VelocityCounter[vindex].x1}:{VelocityCounter[vindex].y1}:{VelocityCounter[vindex].z1}:{arguments[4]}:{arguments[5]}:{arguments[6]}:{arguments[7]}");
+                                            }
+                                        }
+                                        VelocityCounter.RemoveAt(vindex);
+                                    }
+                                }
+                                else
+                                {
+                                    VelocityCounter.Add(new Velocity { uid = arguments[0], time1 = DateTime.Now, x1 = float.Parse(arguments[1]), y1 = float.Parse(arguments[2]), z1 = float.Parse(arguments[3]) });
+                                }
                             }
                         }
                         else if (command.Contains("[ChangeScene] "))
@@ -415,5 +456,16 @@ namespace UdpServer_test
     {
         public string Name;
         public bool Online;
+    }
+
+    public class Velocity
+    {
+        public string uid;
+
+        public float x1, y1, z1;
+        public DateTime time1;
+
+        public float x2, y2, z2;
+        public DateTime time2;
     }
 }

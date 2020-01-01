@@ -38,8 +38,11 @@ public class NetworkManager : MonoBehaviour
     public List<Object> objects = new List<Object>();
     public List<Movements> movements = new List<Movements>();
 
+    //queues
     public List<SyncVarQueue> SVQueue = new List<SyncVarQueue>();
-    
+    public Queue<ActionQueue> MainThreadQueue = new Queue<ActionQueue>();
+    public Queue<ActionQueue> MovementsQueue = new Queue<ActionQueue>();
+
     public string MyNick;
 
     private void Awake()
@@ -81,7 +84,17 @@ public class NetworkManager : MonoBehaviour
 
     private void Update()
     {
-        
+        while(MovementsQueue.Count > 0)
+        {
+            ActionQueue aq = MovementsQueue.Dequeue();
+            movements[aq.index].MI.Invoke(movements[aq.index].classInstance, aq.args);
+        }
+        while(MainThreadQueue.Count > 0)
+        {
+            ActionQueue aq = MainThreadQueue.Dequeue();
+            print(aq.index);
+            rpclist[aq.index].MI.Invoke(rpclist[aq.index].classInstance, aq.args);
+        }
     }
 
     public void GetRpcs()
@@ -155,30 +168,23 @@ public class NetworkManager : MonoBehaviour
                         List<string> arguments = command.Replace($"{command.Split(' ')[0]} ", "").Split(':').ToList();
                         if(cmd == "ObjectMovement")
                         {
-                            Movements move;
-
-                            move = movements.Find(x => x.uid == arguments[0]);
+                            int index = movements.FindIndex(x => x.uid == arguments[0]);
                             arguments.RemoveAt(0);
-                            move.MI.Invoke(move.classInstance, arguments.ToArray());
+                            MovementsQueue.Enqueue(new ActionQueue { index = index, args = arguments.ToArray() });
                         }
                         else
                         {
-                            List<Rpcs> r;
-
                             //commands
-                            r = rpclist.FindAll(o => o.cmd == cmd);
+                            int index = rpclist.FindIndex(o => o.cmd == cmd);
                             try
                             {
-                                foreach (Rpcs rpc in r)
+                                if (rpclist[index].MI.GetParameters().Length > 0)
                                 {
-                                    if (rpc.MI.GetParameters().Length > 0)
-                                    {
-                                        rpc.MI.Invoke(rpc.classInstance, arguments.ToArray());
-                                    }
-                                    else
-                                    {
-                                        rpc.MI.Invoke(rpc.classInstance, null);
-                                    }
+                                    MainThreadQueue.Enqueue(new ActionQueue { index = index, args = arguments.ToArray() });
+                                }
+                                else
+                                {
+                                    MainThreadQueue.Enqueue(new ActionQueue { index = index, args = null });
                                 }
                             }
                             catch { }

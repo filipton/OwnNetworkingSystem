@@ -57,3 +57,10 @@ public class Object
     public string uid;
     public GameObject gb;
 }
+
+[Serializable]
+public class ActionQueue
+{
+    public int index;
+    public object[] args;
+}
